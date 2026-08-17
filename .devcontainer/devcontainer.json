@@ -1,0 +1,21 @@
+{
+  "name": "Python 3.11",
+  "image": "mcr.microsoft.com/devcontainers/python:1-3.11",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+				"GitHub.copilot",
+				"ms-python.python",
+				"mechatroner.rainbow-csv"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python"
+      }
+    }
+  },
+
+  "postCreateCommand": "python --version",
+
+  "remoteUser": "vscode"
+}
