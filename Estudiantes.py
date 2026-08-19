@@ -5,50 +5,67 @@ import plotly.express as px
 # 1. Configuración de la página
 st.set_page_config(page_title="Dashboard de Estudiantes", page_icon="🎓", layout="wide")
 
-# 2. Cargar los datos del DataFrame
+# 2. Cargar los datos del DataFrame (Formato alternativo a prueba de fallos)
 @st.cache_data
 def cargar_datos():
+    # Listas independientes para evitar recortes del sistema de formato
+    estudiantes = ['Carlos Pérez', 'Ana Gómez', 'Luis Martínez', 'María Rodríguez', 'Juan Posada', 'Sofía López', 'Diego Fernádez', 'Laura Gaviria', 'Andrés Castro', 'Valentina Ruiz', 'Mateo Villa', 'Camila Toro', 'Santiago Arango', 'Isabella Meía', 'Alejandro Ortiz', 'Gabriela Cano', 'Samuel Restrepo', 'Mariana Henao', 'Nicolás Jaramillo', 'Luciana Marín']
+    
+    edades = [18, 19, 21, 20, 22, 19, 18, 20, 23, 21, 22, 19, 20, 21, 18, 22, 20, 19, 21, 20]
+    
+    niveles = ['Grado 12', 'Universidad', 'Universidad', 'Universidad', 'Postgrado', 'Universidad', 'Grado 12', 'Universidad', 'Postgrado', 'Universidad', 'Postgrado', 'Universidad', 'Universidad', 'Universidad', 'Grado 12', 'Postgrado', 'Universidad', 'Universidad', 'Universidad', 'Universidad']
+    
+    indices = [3.8, 4.2, 3.5, 4.8, 4.5, 3.9, 3.2, 4.1, 4.6, 3.7, 4.3, 4.0, 3.6, 4.7, 3.4, 4.9, 3.8, 4.3, 3.9, 4.2]
+    
     datos = {
-        'Estudiante': [
-            
-            'Carlos Pérez', 'Ana Gómez', 'Luis Martínez', 'María Rodríguez', 'Juan Posada',
-            'Sofía López', 'Diego Fernádez', 'Laura Gaviria', 'Andrés Castro', 'Valentina Ruiz',
-            'Mateo Villa', 'Camila Toro', 'Santiago Arango', 'Isabella Meía', 'Alejandro Ortiz',
-            'Gabriela Cano', 'Samuel Restrepo', 'Mariana Henao', 'Nicolás Jaramillo', 'Luciana Marín'
-        ],
-        'Edad': [18, 19, 21, 20, 22, 19, 18, 20, 23, 21, 22, 19, 20, 21, 18, 22, 20, 19, 21, 20],  # CORREGIDO: Lista completa de 20 edades
-        'Nivel Académico': [
-            'Grado 12', 'Universidad', 'Universidad', 'Universidad', 'Postgrado',
-            'Universidad', 'Grado 12', 'Universidad', 'Postgrado', 'Universidad',
-            'Postgrado', 'Universidad', 'Universidad', 'Universidad', 'Grado 12',
-            'Postgrado', 'Universidad', 'Universidad', 'Universidad', 'Universidad'
-        ],
-        'Índice Acumulado': [3.8, 4.2, 3.5, 4.8, 4.5, 3.9, 3.2, 4.1, 4.6, 3.7, 4.3, 4.0, 3.6, 4.7, 3.4, 4.9, 3.8, 4.3, 3.9, 4.2]
+        'Estudiante': estudiantes,
+        'Edad': edades,
+        'Nivel Académico': niveles,
+        'Índice Acumulado': indices
     }
     return pd.DataFrame(datos)
 
 df = cargar_datos()
 
 # 3. Título del Dashboard
-st.title("🎓 Dashboard de Rendimiento Estudiantil")
-st.markdown("Análisis interactivo del índice acumulado y niveles académicos.")
+st.title("🎓 Dashboard de Rendimiento Estudiantil Avanzado")
+st.markdown("Análisis interactivo con filtros demográficos y académicos avanzados.")
 
 # 4. Barra lateral para Filtros (Sidebar)
-st.sidebar.header("Filtros de Búsqueda")
+st.sidebar.header("🔍 Panel de Filtros")
 
-# Filtro para activar el Top 5
-filtrar_top_5 = st.sidebar.checkbox("🏆 Mostrar solo el Top 5 Mejores Índices", value=False)
+# Filtro 1: Buscador de texto por nombre
+buscar_nombre = st.sidebar.text_input("Buscar Estudiante por Nombre:", value="")
 
-# Filtro por Nivel Académico
-niveles = df['Nivel Académico'].unique().tolist()
-niveles_seleccionados = st.sidebar.multiselect("Selecciona el Nivel Académico:", options=niveles, default=niveles)
+# Filtro 2: Rango de edad (Slider)
+edad_min, edad_max = int(df['Edad'].min()), int(df['Edad'].max())
+rango_edad = st.sidebar.slider("Filtrar por Rango de Edad:", edad_min, edad_max, (edad_min, edad_max))
 
-# Aplicar filtros de nivel académico
-df_filtrado = df[df['Nivel Académico'].isin(niveles_seleccionados)]
+# Filtro 3: Selección de Nivel Académico
+lista_niveles = df['Nivel Académico'].unique().tolist()
+niveles_seleccionados = st.sidebar.multiselect("Selecciona el Nivel Académico:", options=lista_niveles, default=lista_niveles)
 
-# Aplicar filtro de los 5 mejores si la casilla está marcada
-if filtrar_top_5:
-    df_filtrado = df_filtrado.nlargest(5, 'Índice Acumulado')
+# Filtro 4: Control dinámico del Top-N
+activar_top = st.sidebar.checkbox("🏆 Activar Filtro de Mejores Índices", value=False)
+cantidad_top = st.sidebar.number_input("Cantidad de alumnos en el Top:", min_value=1, max_value=20, value=5, step=1, disabled=not activar_top)
+
+# --- APLICACIÓN DE FILTROS EN PANDAS ---
+df_filtrado = df.copy()
+
+# Aplicar búsqueda por nombre
+if buscar_nombre:
+    df_filtrado = df_filtrado[df_filtrado['Estudiante'].str.contains(buscar_nombre, case=False)]
+
+# Aplicar rango de edad utilizando desempaquetado de tupla para Streamlit
+df_filtrado = df_filtrado[(df_filtrado['Edad'] >= rango_edad[0]) & (df_filtrado['Edad'] <= rango_edad[1])]
+
+# Aplicar niveles académicos
+df_filtrado = df_filtrado[df_filtrado['Nivel Académico'].isin(niveles_seleccionados)]
+
+# Aplicar corte de mejores índices si está activo
+if activar_top and not df_filtrado.empty:
+    df_filtrado = df_filtrado.nlargest(cantidad_top, 'Índice Acumulado')
+
 
 # 5. Métricas Clave (KPIs)
 col1, col2, col3 = st.columns(3)
@@ -69,6 +86,7 @@ with col3:
 
 st.markdown("---")
 
+
 # 6. Gráficos Interactivos
 if not df_filtrado.empty:
     col_graf1, col_graf2 = st.columns(2)
@@ -81,7 +99,7 @@ if not df_filtrado.empty:
             y='Índice Acumulado', 
             color='Nivel Académico',
             text_auto=True,
-            title="Calificaciones por Alumno"
+            title="Calificaciones del segmento seleccionado"
         ).update_layout(xaxis={'categoryorder':'total descending'})
         st.plotly_chart(fig_barras, use_container_width=True)
 
@@ -95,7 +113,8 @@ if not df_filtrado.empty:
         )
         st.plotly_chart(fig_pastel, use_container_width=True)
 else:
-    st.warning("Por favor, selecciona opciones válidas en la barra lateral para mostrar los gráficos.")
+    st.warning("Ningún estudiante coincide con los filtros seleccionados actualmente.")
+
 
 # 7. Tabla de Datos Dinámica
 st.subheader("📋 Vista de Datos General")
