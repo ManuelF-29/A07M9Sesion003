@@ -10,6 +10,7 @@ st.set_page_config(page_title="Dashboard de Estudiantes", page_icon="🎓", layo
 def cargar_datos():
     datos = {
         'Estudiante': [
+            
             'Carlos Pérez', 'Ana Gómez', 'Luis Martínez', 'María Rodríguez', 'Juan Posada',
             'Sofía López', 'Diego Fernádez', 'Laura Gaviria', 'Andrés Castro', 'Valentina Ruiz',
             'Mateo Villa', 'Camila Toro', 'Santiago Arango', 'Isabella Meía', 'Alejandro Ortiz',
